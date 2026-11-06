@@ -45,11 +45,9 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      -      - name: Build and push Docker image
+      -            - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/evenodd-app:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/evenodd-app:${{ github.sha }}
+          tags: harshi0620/evenodd-app:latest,harshi0620/evenodd-app:${{ github.sha }}
