@@ -1,37 +1,51 @@
+
 name: Java CI and Docker Publish
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
   pull_request:
-    branches: [ "main" ]
+    branches:
+      - main
 
 permissions:
   contents: read
 
 jobs:
+
+  # JOB 1: Test and build Java application
   test-and-build:
+    name: Test and Build
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Java and Maven cache
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '21'
           cache: maven
 
-      - name: Run tests and build JAR
+      - name: Run JUnit tests and build
         run: mvn -B clean verify
 
+      - name: Upload JAR artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: evenodd-jar
+          path: target/evenodd-app-1.0.0.jar
+
+  # JOB 2: Build Docker image and publish to Docker Hub
   publish-docker:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    name: Build and Publish Docker Image
     needs: test-and-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -45,7 +59,7 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-            - name: Build and push Docker image
+      - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
